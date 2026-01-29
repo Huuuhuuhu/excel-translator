@@ -1,0 +1,6 @@
+streamlit
+streamlit-autorefresh
+openpyxl
+beautifulsoup4
+openai
+lxml
