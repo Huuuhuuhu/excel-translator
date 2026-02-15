@@ -23,17 +23,17 @@ sudo apt install nginx
 
 ### 2. 上传项目
 
-将项目文件上传到服务器 `/home/admin/translate`：
+将项目文件上传到服务器 `~/excel_translator`：
 
 ```bash
 # 上传文件（在本地执行，替换 your-server-ip）
-scp -r ./* admin@your-server-ip:/home/admin/translate/
+scp -r ./* admin@your-server-ip:~/excel_translator/
 ```
 
 ### 3. 安装 Python 依赖
 
 ```bash
-cd /home/admin/translate
+cd ~/excel_translator
 
 # 创建虚拟环境
 python3 -m venv .venv
@@ -59,7 +59,7 @@ nano .streamlit/secrets.toml  # 编辑配置
 ### 5. 启动 Streamlit 服务
 
 ```bash
-cd /home/admin/translate
+cd ~/excel_translator
 
 # 添加执行权限
 chmod +x start.sh
@@ -83,7 +83,9 @@ sudo cp nginx.conf /etc/nginx/sites-available/translate
 # 创建软链接启用配置
 sudo ln -s /etc/nginx/sites-available/translate /etc/nginx/sites-enabled/
 
-# 删除默认配置（可选）
+# 删除默认配置（可选，避免8080端口冲突）
+# 说明：如果 nginx 默认配置使用了8080端口，会导致冲突
+# 此操作仅删除 sites-enabled 中的软链接，sites-available/default 保留
 sudo rm /etc/nginx/sites-enabled/default
 
 # 测试配置是否正确
@@ -104,7 +106,7 @@ sudo systemctl reload nginx
 ## 服务管理
 
 ```bash
-cd /home/admin/translate
+cd ~/excel_translator
 
 # 启动
 ./start.sh start
@@ -131,10 +133,10 @@ After=network.target
 
 [Service]
 Type=forking
-User=admin
-WorkingDirectory=/home/admin/translate
-ExecStart=/home/admin/translate/start.sh start
-ExecStop=/home/admin/translate/start.sh stop
+User=$USER
+WorkingDirectory=$HOME/excel_translator
+ExecStart=$HOME/excel_translator/start.sh start
+ExecStop=$HOME/excel_translator/start.sh stop
 Restart=on-failure
 
 [Install]
@@ -170,7 +172,7 @@ proxy_set_header Connection "upgrade";
 
 ```bash
 # Streamlit 日志
-cat /home/admin/translate/.pids/8501.log
+cat ~/excel_translator/.pids/8501.log
 
 # nginx 日志
 sudo tail -f /var/log/nginx/error.log

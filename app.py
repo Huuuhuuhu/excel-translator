@@ -156,7 +156,7 @@ def translate_grid(grid, source_lang, target_lang, model, api_settings, task_id=
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ],
-        temperature=0,
+        temperature=1,
     )
     content = response.choices[0].message.content or ""
     logger.info(
@@ -273,7 +273,7 @@ def image_to_html_table(image_bytes, model, api_settings, task_id=None, table_ro
                 ],
             },
         ],
-        temperature=0,
+        temperature=1,
     )
     content = response.choices[0].message.content or ""
     logger.info(
