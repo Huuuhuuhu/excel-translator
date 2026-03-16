@@ -123,31 +123,23 @@ cd ~/excel_translator
 
 ## 开机自启（可选）
 
-创建 systemd 服务文件：
+推荐直接使用仓库内提供的 `excel-translator.service`：
 
 ```bash
-sudo tee /etc/systemd/system/translate.service << 'EOF'
-[Unit]
-Description=zyt's translator
-After=network.target
+cd ~/excel-translator
+chmod +x start.sh
 
-[Service]
-Type=forking
-User=$USER
-WorkingDirectory=$HOME/excel_translator
-ExecStart=$HOME/excel_translator/start.sh start
-ExecStop=$HOME/excel_translator/start.sh stop
-Restart=on-failure
-
-[Install]
-WantedBy=multi-user.target
-EOF
+# 如有需要，先按实际部署路径/用户修改 service 文件中的 User 和 WorkingDirectory
+sudo cp excel-translator.service /etc/systemd/system/excel-translator.service
 
 # 启用开机自启
 sudo systemctl daemon-reload
-sudo systemctl enable translate
-sudo systemctl start translate
+sudo systemctl enable excel-translator.service
+sudo systemctl start excel-translator.service
+sudo systemctl status excel-translator.service
 ```
+
+> 说明：由于 `start.sh` 会自行拉起多个后台 Streamlit 进程，systemd 建议使用 `Type=oneshot + RemainAfterExit=yes`，比 `Type=forking` 更稳定。
 
 ## 常见问题
 

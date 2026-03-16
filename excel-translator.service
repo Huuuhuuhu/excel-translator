@@ -1,0 +1,16 @@
+[Unit]
+Description=excel-translator Streamlit service
+After=network.target
+
+[Service]
+Type=oneshot
+User=admin
+WorkingDirectory=/home/admin/excel-translator
+ExecStart=/home/admin/excel-translator/start.sh start
+ExecStop=/home/admin/excel-translator/start.sh stop
+RemainAfterExit=yes
+TimeoutStartSec=60
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target
