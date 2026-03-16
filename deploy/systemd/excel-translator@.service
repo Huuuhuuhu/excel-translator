@@ -1,0 +1,15 @@
+[Unit]
+Description=excel-translator Streamlit instance on port %i
+After=network.target
+
+[Service]
+Type=simple
+User=__USER__
+WorkingDirectory=__APP_DIR__
+Environment=HOME=__HOME_DIR__
+ExecStart=__APP_DIR__/.venv/bin/streamlit run __APP_DIR__/app.py --server.port %i --server.headless true --server.address 127.0.0.1 --server.maxUploadSize 50 --browser.gatherUsageStats false
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -58,19 +58,27 @@ nano .streamlit/secrets.toml  # 编辑配置
 
 ### 5. 启动 Streamlit 服务
 
+推荐使用 **systemd 直接管理 3 个 Streamlit 实例**（8501 / 8502 / 8503）：
+
 ```bash
-cd ~/excel_translator
+cd ~/excel-translator
+chmod +x deploy/install-systemd.sh
+./deploy/install-systemd.sh
 
-# 添加执行权限
-chmod +x start.sh
-
-# 启动服务（启动 3 个实例：8501, 8502, 8503）
-./start.sh start
-
-# 查看状态
-./start.sh status
+# 查看单个实例状态
+systemctl status excel-translator@8501.service
 
 # 查看日志
+journalctl -u excel-translator@8501.service -f
+```
+
+如果你只是临时手动运行，也可以继续使用：
+
+```bash
+cd ~/excel-translator
+chmod +x start.sh
+./start.sh start
+./start.sh status
 cat .pids/8501.log
 ```
 
@@ -105,41 +113,50 @@ sudo systemctl reload nginx
 
 ## 服务管理
 
+### systemd（推荐）
+
 ```bash
-cd ~/excel_translator
+# 启动 3 个实例
+sudo systemctl start excel-translator@8501 excel-translator@8502 excel-translator@8503
 
-# 启动
-./start.sh start
+# 停止 3 个实例
+sudo systemctl stop excel-translator@8501 excel-translator@8502 excel-translator@8503
 
-# 停止
-./start.sh stop
-
-# 重启
-./start.sh restart
+# 重启 3 个实例
+sudo systemctl restart excel-translator@8501 excel-translator@8502 excel-translator@8503
 
 # 查看状态
+systemctl status excel-translator@8501.service
+```
+
+### start.sh（兼容手动启动）
+
+```bash
+cd ~/excel-translator
+./start.sh start
+./start.sh stop
+./start.sh restart
 ./start.sh status
 ```
 
 ## 开机自启（可选）
 
-推荐直接使用仓库内提供的 `excel-translator.service`：
+`deploy/install-systemd.sh` 已经会自动执行 `enable --now`，因此默认就包含开机自启。
+
+如果你想手动安装，可以这样做：
 
 ```bash
 cd ~/excel-translator
-chmod +x start.sh
-
-# 如有需要，先按实际部署路径/用户修改 service 文件中的 User 和 WorkingDirectory
-sudo cp excel-translator.service /etc/systemd/system/excel-translator.service
-
-# 启用开机自启
-sudo systemctl daemon-reload
-sudo systemctl enable excel-translator.service
-sudo systemctl start excel-translator.service
-sudo systemctl status excel-translator.service
+chmod +x deploy/install-systemd.sh
+./deploy/install-systemd.sh 8501 8502 8503
 ```
 
-> 说明：由于 `start.sh` 会自行拉起多个后台 Streamlit 进程，systemd 建议使用 `Type=oneshot + RemainAfterExit=yes`，比 `Type=forking` 更稳定。
+它会：
+- 根据当前目录和当前用户生成 `excel-translator@.service`
+- 安装到 `/etc/systemd/system/`
+- 自动启用并启动 8501 / 8502 / 8503 三个实例
+
+> 说明：现在推荐的部署方式是让 systemd **直接管理每个 Streamlit 进程**，而不是通过 `Type=forking` 或 `nohup` 间接管理。
 
 ## 常见问题
 
@@ -177,5 +194,7 @@ sudo tail -f /var/log/nginx/error.log
 | `app.py` | 主应用代码 |
 | `requirements.txt` | Python 依赖 |
 | `nginx.conf` | nginx 配置文件 |
-| `start.sh` | 服务启动脚本 |
+| `start.sh` | 手动启动脚本（兼容旧方式） |
+| `deploy/install-systemd.sh` | 安装 systemd 模板并启用多实例 |
+| `deploy/systemd/excel-translator@.service` | systemd 模板服务文件 |
 | `.streamlit/secrets.toml` | 配置文件（密码、API密钥等） |
